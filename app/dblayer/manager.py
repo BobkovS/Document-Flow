@@ -1,3 +1,5 @@
+import datetime
+
 import psycopg2
 
 from config import DB_USER, DB_PASSWORD, DB_NAME, DB_PORT, DB_HOST
@@ -13,6 +15,106 @@ class SqlWorker:
             password=DB_PASSWORD,
             target_session_attrs='read-write')
         self.cursor = self.connection.cursor()
+
+    def get_profit_by_month(self):
+        deal_ids = []
+        sql = "SELECT id FROM deal WHERE deal_type = (SELECT id FROM deal_type WHERE value='Покупка') AND date > %s"
+        self.cursor.execute(sql, (datetime.date.today() - datetime.timedelta(days=datetime.date.today().day),))
+        for element in self.cursor.fetchall():
+            deal_ids.append(element[0])
+
+        deals_info = []
+        for deal_id in deal_ids:
+            sql = "SELECT product_id, count FROM deal_product WHERE deal_id = %s"
+            self.cursor.execute(sql, (deal_id,))
+            for element in self.cursor.fetchall():
+                deals_info.append({'Продукт': element[0], 'Количество': element[1]})
+
+        for index, element in enumerate(deals_info):
+            sql = "SELECT purchase_price FROM product WHERE id = %s"
+            self.cursor.execute(sql, (element['Продукт'],))
+            deals_info[index]['Цена продукта'] = self.cursor.fetchall()[0][0]
+            deals_info[index]['Итого'] = deals_info[index]['Цена продукта'] * deals_info[index]['Количество']
+
+        purchase_value_by_month = 0
+        for element in deals_info:
+            purchase_value_by_month += element['Итого']
+
+        deal_ids = []
+        sql = "SELECT id FROM deal WHERE deal_type = (SELECT id FROM deal_type WHERE value='Продажа') AND date > %s"
+        self.cursor.execute(sql, (datetime.date.today() - datetime.timedelta(days=datetime.date.today().day),))
+        for element in self.cursor.fetchall():
+            deal_ids.append(element[0])
+
+        deals_info = []
+        for deal_id in deal_ids:
+            sql = "SELECT product_id, count FROM deal_product WHERE deal_id = %s"
+            self.cursor.execute(sql, (deal_id,))
+            for element in self.cursor.fetchall():
+                deals_info.append({'Продукт': element[0], 'Количество': element[1]})
+
+        for index, element in enumerate(deals_info):
+            sql = "SELECT selling_price FROM product WHERE id = %s"
+            self.cursor.execute(sql, (element['Продукт'],))
+            deals_info[index]['Цена продукта'] = self.cursor.fetchall()[0][0]
+            deals_info[index]['Итого'] = deals_info[index]['Цена продукта'] * deals_info[index]['Количество']
+
+        selling_value_by_month = 0
+        for element in deals_info:
+            selling_value_by_month += element['Итого']
+
+        profit = selling_value_by_month - purchase_value_by_month
+        return profit
+
+    def get_profit_all_time(self):
+        deal_ids = []
+        sql = "SELECT id FROM deal WHERE deal_type = (SELECT id FROM deal_type WHERE value='Покупка')"
+        self.cursor.execute(sql)
+        for element in self.cursor.fetchall():
+            deal_ids.append(element[0])
+
+        deals_info = []
+        for deal_id in deal_ids:
+            sql = "SELECT product_id, count FROM deal_product WHERE deal_id = %s"
+            self.cursor.execute(sql, (deal_id,))
+            for element in self.cursor.fetchall():
+                deals_info.append({'Продукт': element[0], 'Количество': element[1]})
+
+        for index, element in enumerate(deals_info):
+            sql = "SELECT purchase_price FROM product WHERE id = %s"
+            self.cursor.execute(sql, (element['Продукт'],))
+            deals_info[index]['Цена продукта'] = self.cursor.fetchall()[0][0]
+            deals_info[index]['Итого'] = deals_info[index]['Цена продукта'] * deals_info[index]['Количество']
+
+        purchase_value_by_month = 0
+        for element in deals_info:
+            purchase_value_by_month += element['Итого']
+
+        deal_ids = []
+        sql = "SELECT id FROM deal WHERE deal_type = (SELECT id FROM deal_type WHERE value='Продажа')"
+        self.cursor.execute(sql)
+        for element in self.cursor.fetchall():
+            deal_ids.append(element[0])
+
+        deals_info = []
+        for deal_id in deal_ids:
+            sql = "SELECT product_id, count FROM deal_product WHERE deal_id = %s"
+            self.cursor.execute(sql, (deal_id,))
+            for element in self.cursor.fetchall():
+                deals_info.append({'Продукт': element[0], 'Количество': element[1]})
+
+        for index, element in enumerate(deals_info):
+            sql = "SELECT selling_price FROM product WHERE id = %s"
+            self.cursor.execute(sql, (element['Продукт'],))
+            deals_info[index]['Цена продукта'] = self.cursor.fetchall()[0][0]
+            deals_info[index]['Итого'] = deals_info[index]['Цена продукта'] * deals_info[index]['Количество']
+
+        selling_value_by_month = 0
+        for element in deals_info:
+            selling_value_by_month += element['Итого']
+
+        profit = selling_value_by_month - purchase_value_by_month
+        return profit
 
     # Контрагенты таблица
     def create_partner(self, data):
@@ -37,7 +139,7 @@ class SqlWorker:
         self.cursor.execute(sql)
         result = self.cursor.fetchall()
         for elem in result:
-            partners.append({'Фамилия': elem[1], "Имя": elem[2], "Отчество": elem[3], "Компания": elem[4]})
+            partners.append({'surname': elem[1], "name": elem[2], "patronymic": elem[3], "company": elem[4]})
         return partners
 
     # Продукты таблица
@@ -63,7 +165,7 @@ class SqlWorker:
         self.cursor.execute(sql)
         result = self.cursor.fetchall()
         for elem in result:
-            products.append({'Имя': elem[1], "Остаток": elem[2], "Цена продажи": elem[3], "Цена покупки": elem[4]})
+            products.append({'name': elem[1], "purchase_price": elem[2], "selling_price": elem[3]})
         return products
 
     def create_deal(self, data):
@@ -89,7 +191,7 @@ class SqlWorker:
         name, surname, patronymic = result[0][0], result[0][1], result[0][2]
 
         sql = "SELECT id FROM deal WHERE partner_id = (SELECT id FROM partner WHERE company_name=%s) AND deal_type =" \
-              " (SELECT id FROM deal_type WHERE value = 'Покупка') AND date BETWEEN %s AND %s"
+              " (SELECT id FROM deal_type WHERE value = 'Продажа') AND date BETWEEN %s AND %s"
         self.cursor.execute(sql, (data['company_name'], data['date_from'], data['date_to']))
 
         deal_ids = []
@@ -107,12 +209,33 @@ class SqlWorker:
             self.cursor.execute(sql, (element['Сделка'],))
             deals_info[index]['Сделка'] = self.cursor.fetchall()[0][0].__str__()
 
+            sql = "SELECT selling_price FROM product WHERE id = %s"
+            self.cursor.execute(sql, (element['Продукт'],))
+            deals_info[index]['Цена продажи'] = self.cursor.fetchall()[0][0]
+
             sql = "SELECT name FROM product WHERE id = %s"
             self.cursor.execute(sql, (element['Продукт'],))
             deals_info[index]['Продукт'] = self.cursor.fetchall()[0][0]
 
-        report_info = {'Имя': name, 'Фамилия': surname, 'Отчество': patronymic, 'Инфомация о закупках': deals_info,
+            deals_info[index]['Сумма'] = deals_info[index]["Количество"] * deals_info[index]["Цена продажи"]
+
+        value = 0
+        for element in deals_info:
+            value += element['Сумма']
+
+        deals_info_group = {}
+        for element in deals_info:
+            if element['Сделка'] not in deals_info_group.keys():
+                deals_info_group.update({element['Сделка']: []})
+
+        for element in deals_info:
+            deals_info_group[element['Сделка']].append(
+                {"Продукт": element['Продукт'], "Количество": element['Количество'],
+                 "Цена продажи": element['Цена продажи'], "Сумма": element['Сумма']})
+
+        report_info = {'Имя': name, 'Фамилия': surname, 'Отчество': patronymic,
+                       'Информация о закупках': deals_info_group,
                        "Дата начала отсчета": data['date_from'], "Дата конца отсчета": data['date_to'],
-                       "Компания": data['company_name']}
+                       "Компания": data['company_name'], "Общая сумма закупок": value}
 
         return report_info

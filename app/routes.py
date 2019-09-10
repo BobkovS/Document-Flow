@@ -7,7 +7,12 @@ from app import worker
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template('index.html')
+    params = {"month_profit": worker.get_profit_by_month(),
+              "profit": worker.get_profit_all_time(),
+              "partners": worker.select_partners(),
+              "products": worker.select_products()}
+
+    return render_template('index.html', params=params)
 
 
 @app.route('/user', methods=['GET'])
