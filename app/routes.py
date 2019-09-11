@@ -1,4 +1,4 @@
-from flask import render_template
+from flask import render_template, request
 
 from app import app
 from app import worker
@@ -15,9 +15,17 @@ def index():
     return render_template('index.html', params=params)
 
 
-@app.route('/user', methods=['GET'])
-def get_partners():
-    partners = worker.select_partners()
+@app.route('/deal', methods=['POST'])
+def deal():
+    json = request.json
+    print(json)
+
+    params = {"month_profit": worker.get_profit_by_month(),
+              "profit": worker.get_profit_all_time(),
+              "partners": worker.select_partners(),
+              "products": worker.select_products()}
+
+    return render_template('index.html', params=params)
 
 
 @app.route('/user', methods=['POST'])

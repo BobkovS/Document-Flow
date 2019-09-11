@@ -13,7 +13,81 @@
     <link rel="stylesheet" href="../static/fonts/font-awesome.min.css">
     <link rel="stylesheet" href="../static/fonts/fontawesome5-overrides.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Alfa+Slab+One">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.15/css/dataTables.bootstrap.min.css">
+
+    <script>
+        var product_list = [];
+        var partner;
+        var deal_type;
+        var deal_info = {};
+
+        function InitializeParams() {
+            product_list = [];
+            partner = '';
+            deal_type = '';
+            deal_info = {}
+        }
+
+        function GetDealParams() {
+            partner = document.getElementById("partner_select");
+            partner = partner.options[partner.selectedIndex].value;
+            deal_type = $(document.getElementById("deal_type_select")).val();
+            deal_info['Партнер'] = partner;
+            deal_info['Список продуктов'] = product_list;
+            deal_info['Тип сделки'] = deal_type;
+        }
+
+
+        function AddProduct() {
+            var product = document.getElementById("product_select");
+            product = product.options[product.selectedIndex].value;
+            var count = $(document.getElementById("product_count")).val();
+            product_list.push({"product": product, "count": count});
+            var row = document.createElement("tr");
+            var product_cell = document.createElement("td");
+            var count_cell = document.createElement("td");
+            product_cell.innerHTML = product;
+            count_cell.innerHTML = count;
+            row.append(product_cell);
+            row.append(count_cell);
+            document.getElementById("rows").appendChild(row);
+        }
+
+
+        function alertObject(obj) {
+            for (var key in obj) {
+                alert('key: ' + key + '\n' + 'value: ' + obj[key]);
+                if (typeof obj[key] === 'object') {
+                    alertObject(obj[key]);
+                }
+            }
+        }
+
+        function selectElement(id, valueToSelect) {
+            let element = document.getElementById(id);
+            element.value = valueToSelect;
+        }
+
+        function DealRequest() {
+            GetDealParams();
+            var xhr = new XMLHttpRequest();
+            var url = "http://localhost:8081/deal";
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var json = JSON.parse(xhr.responseText);
+                    console.log(json.email + ", " + json.password);
+                }
+            };
+            var data = JSON.stringify(deal_info);
+            xhr.send(data);
+
+            selectElement("product_select", "Выберите продукт");
+            selectElement("partner_select", "Выберите контрагента");
+            selectElement("deal_type_select", "Выберите тип сделки");
+        }
+    </script>
+
 </head>
 
 <body id="page-top">
@@ -32,6 +106,7 @@
                                 <li class="nav-item" role="presentation"><a class="nav-link active text-dark"
                                                                             data-toggle="modal"
                                                                             data-target="#basicExampleModal"
+                                                                            onclick="InitializeParams()"
                                                                             style="line-height: 24px;font-size: 22px;">Оформить
                                     сделку</a></li>
                                 <li class="nav-item" role="presentation"><a class="nav-link text-left text-dark"
@@ -155,16 +230,68 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <select class="browser-default custom-select">
-                        <option selected>Open this select menu</option>
-                        <option value="1">One</option>
-                        <option value="2">Two</option>
-                        <option value="3">Three</option>
+                    <select style="margin-bottom: 10px" id="deal_type_select" class="browser-default custom-select">
+                        <option selected>Выберите тип сделки</option>
+                        <option value="Покупка">Покупка</option>
+                        <option value="Продажа">Продажа</option>
                     </select>
+
+                    <select style="margin-bottom: 10px" id="partner_select" class="browser-default custom-select">
+                        <option selected>Выберите контрагента</option>
+                        {% for partner in params.partners %}
+                        <option value={{partner.company}}>{{partner.company }}</option>
+                        {% endfor %}
+                    </select>
+
+
+                    <div style="margin-bottom: 10px" class="row">
+                        <div class="col">
+                            <select style="width: 44%; margin-right: 2%" id="product_select"
+                                    class="browser-default custom-select">
+                                <option selected>Выберите продукт</option>
+                                {% for product in params.products %}
+                                <option value={{product.name}}>{{product.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <input style="width: 44%; height: 38px; margin-right: 2%" id="product_count" type="text"
+                                   class="border rounded"
+                                   placeholder="Введите количество"/>
+                            <button style="width: 6%; height: 38px; padding: 0;" class="btn btn-primary" type="button"
+                                    onclick="AddProduct()">
+                                OK
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">Выбранные продукты</h4>
+                                    <div class="table-responsive table-bordered">
+                                        <table id="product_select_table" class="table table-bordered">
+                                            <thead>
+                                            <tr>
+                                                <th>Продукт</th>
+                                                <th>Количество</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody id="rows">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
-                    <button type="button" class="btn btn-primary">Оформить</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="DealRequest()">
+                        Оформить
+                    </button>
                 </div>
             </div>
         </div>
@@ -173,8 +300,6 @@
     <a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a></div>
 <script src="../static/js/jquery.min.js"></script>
 <script src="../static/bootstrap/js/bootstrap.min.js"></script>
-<script src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.10.15/js/dataTables.bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.js"></script>
 <script src="../static/js/theme.js"></script>
 
