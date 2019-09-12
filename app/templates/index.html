@@ -15,10 +15,10 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Alfa+Slab+One">
 
     <script>
-        var product_list = [];
-        var partner;
-        var deal_type;
-        var deal_info = {};
+        let product_list = [];
+        let partner;
+        let deal_type;
+        let deal_info = {};
 
         function InitializeParams() {
             product_list = [];
@@ -36,25 +36,37 @@
             deal_info['Тип сделки'] = deal_type;
         }
 
-
         function AddProduct() {
-            var product = document.getElementById("product_select");
+            let products_in_table = [];
+            let product = document.getElementById("product_select");
             product = product.options[product.selectedIndex].value;
-            var count = $(document.getElementById("product_count")).val();
-            product_list.push({"product": product, "count": count});
-            var row = document.createElement("tr");
-            var product_cell = document.createElement("td");
-            var count_cell = document.createElement("td");
-            product_cell.innerHTML = product;
-            count_cell.innerHTML = count;
-            row.append(product_cell);
-            row.append(count_cell);
-            document.getElementById("rows").appendChild(row);
+            let count = $(document.getElementById("product_count")).val();
+            for (let i = 0; i < product_list.length; i++) {
+                products_in_table.push(product_list[i].product)
+            }
+            if (products_in_table.indexOf(product) >= 0) {
+                product_list[products_in_table.indexOf(product)].count = count
+            } else {
+                product_list.push({"product": product, "count": count});
+            }
+
+            $("#rows").empty();
+
+            for (let i = 0; i < product_list.length; i++) {
+                let row = document.createElement("tr");
+                let product_cell = document.createElement("td");
+                let count_cell = document.createElement("td");
+                product_cell.innerHTML = product_list[i].product;
+                count_cell.innerHTML = product_list[i].count;
+                row.append(product_cell);
+                row.append(count_cell);
+                document.getElementById("rows").appendChild(row);
+            }
         }
 
 
         function alertObject(obj) {
-            for (var key in obj) {
+            for (let key in obj) {
                 alert('key: ' + key + '\n' + 'value: ' + obj[key]);
                 if (typeof obj[key] === 'object') {
                     alertObject(obj[key]);
@@ -69,22 +81,36 @@
 
         function DealRequest() {
             GetDealParams();
-            var xhr = new XMLHttpRequest();
-            var url = "http://localhost:8081/deal";
+            let xhr = new XMLHttpRequest();
+            let url = "http://localhost:8081/deal";
             xhr.open("POST", url, true);
             xhr.setRequestHeader("Content-Type", "application/json");
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4 && xhr.status === 200) {
-                    var json = JSON.parse(xhr.responseText);
+                    let json = JSON.parse(xhr.responseText);
                     console.log(json.email + ", " + json.password);
                 }
             };
-            var data = JSON.stringify(deal_info);
+            let data = JSON.stringify(deal_info);
             xhr.send(data);
 
+            ClearModal()
+        }
+
+        function ClearModal() {
             selectElement("product_select", "Выберите продукт");
             selectElement("partner_select", "Выберите контрагента");
             selectElement("deal_type_select", "Выберите тип сделки");
+            selectElement("product_count", "");
+            $("#rows").empty();
+        }
+    </script>
+
+    <script>
+        function ClearReportModal() {
+            selectElement("datepicker_start", "");
+            selectElement("datepicker_end", "");
+            selectElement("partner_select_report", "Выберите контрагента");
         }
     </script>
 
@@ -105,12 +131,14 @@
                             <ul class="nav navbar-nav">
                                 <li class="nav-item" role="presentation"><a class="nav-link active text-dark"
                                                                             data-toggle="modal"
-                                                                            data-target="#basicExampleModal"
+                                                                            data-target="#DealRegModal"
                                                                             onclick="InitializeParams()"
                                                                             style="line-height: 24px;font-size: 22px;">Оформить
                                     сделку</a></li>
                                 <li class="nav-item" role="presentation"><a class="nav-link text-left text-dark"
                                                                             href="table.html"
+                                                                            data-toggle="modal"
+                                                                            data-target="#ReportGenModal"
                                                                             style="font-size: 22px;line-height: 24px;">Сгенерировать
                                     отчет</a></li>
                                 <li class="nav-item" role="presentation"></li>
@@ -219,12 +247,12 @@
 
 
     <!--    Модальное окно "Оформление сделки"-->
-    <div class="modal fade" id="basicExampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    <div class="modal fade" id="DealRegModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
          aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Оформление сделки</h5>
+                    <h5 class="modal-title">Оформление сделки</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -288,9 +316,56 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="ClearModal()">Отмена
+                    </button>
                     <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="DealRequest()">
                         Оформить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!--    Модальное окно "Генерация отчета"-->
+    <div class="modal fade" id="ReportGenModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Генерация отчета</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row">
+                        <div class="col">
+                            <label style="font-size: small">Дата начала</label>
+                            <input id="datepicker_start" type="date"/></div>
+                        <div class="col">
+                            <label style="font-size: small">Дата конца</label>
+                            <input id="datepicker_end" type="date"/></div>
+                        <div class="col">
+                            <label style="font-size: small">Компания</label>
+                            <select id="partner_select_report">
+                                <option selected>Выберите контрагента</option>
+                                {% for partner in params.partners %}
+                                <option value={{partner.company}}>{{partner.company }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="ClearReportModal()">
+                        Отмена
+                    </button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="DealRequest()">
+                        Сгенерировать
                     </button>
                 </div>
             </div>
