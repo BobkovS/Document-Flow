@@ -27,7 +27,6 @@
             deal_info = {}
         }
 
-
         function GetDealParams() {
             partner = document.getElementById("partner_select");
             partner = partner.options[partner.selectedIndex].value;
@@ -65,16 +64,6 @@
             }
         }
 
-
-        function alertObject(obj) {
-            for (let key in obj) {
-                alert('key: ' + key + '\n' + 'value: ' + obj[key]);
-                if (typeof obj[key] === 'object') {
-                    alertObject(obj[key]);
-                }
-            }
-        }
-
         function selectElement(id, valueToSelect) {
             let element = document.getElementById(id);
             element.value = valueToSelect;
@@ -82,13 +71,27 @@
 
         function DealRequest() {
             GetDealParams();
+            if (deal_info['Тип сделки'] === "Выберите тип сделки") {
+                alert("Выберите тип сделки");
+                return;
+            }
+
+            if (deal_info['Партнер'] === "Выберите контрагента") {
+                alert("Выберите контрагента");
+                return;
+            }
+
+            if (deal_info['Список продуктов'].length === 0) {
+                alert("Добавьте продукты к сделке");
+                return;
+            }
+
             let xhr = new XMLHttpRequest();
             let url = "http://localhost:8081/deal";
             xhr.open("POST", url, true);
             xhr.setRequestHeader("Content-Type", "application/json");
             let data = JSON.stringify(deal_info);
             xhr.send(data);
-
             ClearModal()
         }
 
@@ -107,7 +110,6 @@
         let partner_company = '';
         let report_info = {};
 
-
         function InitializeParamsReport() {
             date_start = new Date();
             date_end = new Date();
@@ -115,13 +117,11 @@
             report_info = {};
         }
 
-
         function ClearReportModal() {
             selectElement("datepicker_start", "");
             selectElement("datepicker_end", "");
             selectElement("partner_select_report", "Выберите контрагента");
         }
-
 
         function GetReportParams() {
 
@@ -146,11 +146,26 @@
 
         function ReportRequest() {
             GetReportParams();
-            if (new Date(date_start) - new Date(date_end) > 0) {
+
+            if (report_info['Дата начала'] === "NaN-NaN-NaN") {
+                alert("Введите дату начала отсчета");
+                return;
+            }
+
+            if (report_info['Дата конца'] === "NaN-NaN-NaN") {
+                alert("Введите дату конца отсчета");
+                return;
+            }
+
+            if (new Date(report_info['Дата начала']) - new Date(report_info['Дата конца']) > 0) {
                 alert("Даты введены неверно");
                 return;
             }
 
+            if (report_info['Компания'] === "Выберите контрагента") {
+                alert("Выберите контрагента");
+                return;
+            }
 
             let xhr = new XMLHttpRequest();
             let url = "http://localhost:8081/report";
@@ -164,7 +179,6 @@
     </script>
 
 </head>
-
 <body id="page-top">
 <div id="wrapper">
     <div class="d-flex flex-column" id="content-wrapper">
@@ -327,7 +341,6 @@
         </footer>
     </div>
 
-
     <!--    Модальное окно "Оформление сделки"-->
     <div class="modal fade" id="DealRegModal" tabindex="-1" role="dialog"
          aria-labelledby="exampleModalLabel"
@@ -399,8 +412,6 @@
                             </div>
                         </div>
                     </div>
-
-
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal"
@@ -416,7 +427,6 @@
         </div>
     </div>
 
-
     <!--    Модальное окно "Генерация отчета"-->
     <div class="modal fade" id="ReportGenModal" tabindex="-1" role="dialog"
          aria-labelledby="exampleModalLabel"
@@ -430,7 +440,6 @@
                     </button>
                 </div>
                 <div class="modal-body">
-
                     <div class="row">
                         <div class="col">
                             <label style="font-size: small">Дата начала</label>
@@ -448,8 +457,6 @@
                             </select>
                         </div>
                     </div>
-
-
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal"
@@ -472,7 +479,5 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.js"></script>
 <script src="../static/js/theme.js"></script>
 
-
 </body>
-
 </html>
