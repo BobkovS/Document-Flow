@@ -37,9 +37,9 @@ def generate_report(data):
     p = document.add_paragraph('Уважаемый(ая) ')
     p.alignment = WD_PARAGRAPH_ALIGNMENT.DISTRIBUTE
     p.add_run(data['Фамилия'] + ' ' + data['Имя'] + ' ' + data['Отчество'] + ' ').bold = True
-    p.add_run('просим вас оплатить закупки вашей компанией ')
-    p.add_run('"' + data['Компания'] + '"' + ' ').bold = True
-    p.add_run('в период с ')
+    p.add_run('просим вас оплатить закупки, произведенные компанией ')
+    p.add_run('"' + data['Компания'] + '"' + ', ').bold = True
+    p.add_run('в которой для нас вы являеетесь контактным лицом в период с ')
     p.add_run(data['Дата начала отсчета'] + ' ').bold = True
     p.add_run('по ')
     p.add_run(data['Дата конца отсчета'] + '.').bold = True
@@ -51,7 +51,7 @@ def generate_report(data):
 
     table = document.add_table(rows=1, cols=5)
     hdr_cells = table.rows[0].cells
-    hdr_cells[0].text = 'Сделка'
+    hdr_cells[0].text = 'Дата'
     hdr_cells[1].text = 'Продукт'
     hdr_cells[2].text = 'Количество'
     hdr_cells[3].text = 'Цена'

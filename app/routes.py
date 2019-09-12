@@ -10,7 +10,8 @@ def index():
     params = {"month_profit": worker.get_profit_by_month(),
               "profit": worker.get_profit_all_time(),
               "partners": worker.select_partners(),
-              "products": worker.select_products()}
+              "products": worker.select_products(),
+              "deals": worker.get_all_deals_info()}
 
     return render_template('index.html', params=params)
 

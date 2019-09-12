@@ -85,12 +85,6 @@
             let url = "http://localhost:8081/deal";
             xhr.open("POST", url, true);
             xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    let json = JSON.parse(xhr.responseText);
-                    console.log(json.email + ", " + json.password);
-                }
-            };
             let data = JSON.stringify(deal_info);
             xhr.send(data);
 
@@ -107,6 +101,20 @@
     </script>
 
     <script>
+        let data_start = new Date();
+        let data_end = new Date();
+        let partner_company = '';
+        let report_info = {"Дата начала отсчета": "", "Дата конца отсчета": "", "Партнер": ""}
+
+
+        function InitializeParamsReport() {
+            let data_start = new Date()
+            let data_end = new Date()
+            let partner_company = ''
+            let report_info = {"Дата начала отсчета": "", "Дата конца отсчета": "", "Партнер": ""}
+        }
+
+
         function ClearReportModal() {
             selectElement("datepicker_start", "");
             selectElement("datepicker_end", "");
@@ -139,6 +147,7 @@
                                                                             href="table.html"
                                                                             data-toggle="modal"
                                                                             data-target="#ReportGenModal"
+                                                                            onclick="InitializeParamsReport()"
                                                                             style="font-size: 22px;line-height: 24px;">Сгенерировать
                                     отчет</a></li>
                                 <li class="nav-item" role="presentation"></li>
@@ -219,6 +228,7 @@
                                             <th>Наименование</th>
                                             <th>Цена продажи</th>
                                             <th>Цена покупки</th>
+                                            <th>Склад</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -227,6 +237,34 @@
                                             <td>{{ product.name }}</td>
                                             <td>{{ product.purchase_price }}</td>
                                             <td>{{ product.selling_price }}</td>
+                                            <td>{{ product.stock }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h4 class="card-title">Совершенные сделки</h4>
+                                <div class="table-responsive table-bordered">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                        <tr>
+                                            <th>Дата</th>
+                                            <th>Тип сделки</th>
+                                            <th>Контрагент</th>
+                                            <th>Продукты</th>
+                                            <th>Сумма сделки</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for deal in params.deals %}
+                                        <tr>
+                                            <td>{{ deal.Дата }}</td>
+                                            <td>{{ deal.Тип_сделки }}</td>
+                                            <td>{{ deal.Партнер }}</td>
+                                            <td>{{ deal.Продукты_строка }}</td>
+                                            <td>{{ deal.Общая_сумма_сделки }}</td>
                                         </tr>
                                         {% endfor %}
                                         </tbody>
@@ -238,16 +276,20 @@
                 </div>
             </div>
         </div>
+
+
         <footer class="bg-white sticky-footer">
             <div class="container my-auto">
-                <div class="text-center my-auto copyright"><span>Copyright © Документооборот 2019</span></div>
+                <div class="text-center my-auto copyright"><span>Copyright © Документооборот 2019</span>
+                </div>
             </div>
         </footer>
     </div>
 
 
     <!--    Модальное окно "Оформление сделки"-->
-    <div class="modal fade" id="DealRegModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    <div class="modal fade" id="DealRegModal" tabindex="-1" role="dialog"
+         aria-labelledby="exampleModalLabel"
          aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -258,13 +300,15 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <select style="margin-bottom: 10px" id="deal_type_select" class="browser-default custom-select">
+                    <select style="margin-bottom: 10px" id="deal_type_select"
+                            class="browser-default custom-select">
                         <option selected>Выберите тип сделки</option>
                         <option value="Покупка">Покупка</option>
                         <option value="Продажа">Продажа</option>
                     </select>
 
-                    <select style="margin-bottom: 10px" id="partner_select" class="browser-default custom-select">
+                    <select style="margin-bottom: 10px" id="partner_select"
+                            class="browser-default custom-select">
                         <option selected>Выберите контрагента</option>
                         {% for partner in params.partners %}
                         <option value={{partner.company}}>{{partner.company }}</option>
@@ -281,10 +325,12 @@
                                 <option value={{product.name}}>{{product.name }}</option>
                                 {% endfor %}
                             </select>
-                            <input style="width: 44%; height: 38px; margin-right: 2%" id="product_count" type="text"
+                            <input style="width: 44%; height: 38px; margin-right: 2%" id="product_count"
+                                   type="text"
                                    class="border rounded"
                                    placeholder="Введите количество"/>
-                            <button style="width: 6%; height: 38px; padding: 0;" class="btn btn-primary" type="button"
+                            <button style="width: 6%; height: 38px; padding: 0;" class="btn btn-primary"
+                                    type="button"
                                     onclick="AddProduct()">
                                 OK
                             </button>
@@ -316,9 +362,12 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="ClearModal()">Отмена
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            onclick="ClearModal()">
+                        Отмена
                     </button>
-                    <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="DealRequest()">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal"
+                            onclick="DealRequest()">
                         Оформить
                     </button>
                 </div>
@@ -328,7 +377,8 @@
 
 
     <!--    Модальное окно "Генерация отчета"-->
-    <div class="modal fade" id="ReportGenModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    <div class="modal fade" id="ReportGenModal" tabindex="-1" role="dialog"
+         aria-labelledby="exampleModalLabel"
          aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -361,10 +411,12 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="ClearReportModal()">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            onclick="ClearReportModal()">
                         Отмена
                     </button>
-                    <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="DealRequest()">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal"
+                            onclick="DealRequest()">
                         Сгенерировать
                     </button>
                 </div>
@@ -372,7 +424,8 @@
         </div>
     </div>
 
-    <a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a></div>
+    <a class="border rounded d-inline scroll-to-top" href="#page-top"><i
+            class="fas fa-angle-up"></i></a></div>
 <script src="../static/js/jquery.min.js"></script>
 <script src="../static/bootstrap/js/bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.js"></script>

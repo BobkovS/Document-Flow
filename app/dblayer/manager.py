@@ -165,7 +165,10 @@ class SqlWorker:
         self.cursor.execute(sql)
         result = self.cursor.fetchall()
         for elem in result:
-            products.append({'name': elem[1], "purchase_price": elem[2], "selling_price": elem[3]})
+            sql = "SELECT value FROM stock WHERE id = %s"
+            self.cursor.execute(sql, (elem[4],))
+            products.append({'name': elem[1], "purchase_price": elem[2], "selling_price": elem[3],
+                             "stock": self.cursor.fetchall()[0][0]})
         return products
 
     def create_deal(self, data):
@@ -183,6 +186,48 @@ class SqlWorker:
                   "name= %s), %s)"
             self.cursor.execute(sql, (deal_id, element['name'], element['count']))
             self.connection.commit()
+
+    def get_all_deals_info(self):
+        sql = "SELECT * FROM deal"
+        self.cursor.execute(sql)
+
+        deals_info = []
+        for element in self.cursor.fetchall():
+            deals_info.append(
+                {'Идентификатор': element[0], 'Партнер': element[1], "Дата": element[2].date().__str__(),
+                 "Тип_сделки": element[3],
+                 "Продукты": []})
+
+        for index, element in enumerate(deals_info):
+            total_amount = 0
+
+            sql = "SELECT company_name FROM partner WHERE id = %s"
+            self.cursor.execute(sql, (element['Партнер'],))
+            deals_info[index]['Партнер'] = self.cursor.fetchall()[0][0]
+
+            sql = "SELECT value FROM deal_type WHERE id = %s"
+            self.cursor.execute(sql, (element['Тип_сделки'],))
+            deals_info[index]['Тип_сделки'] = self.cursor.fetchall()[0][0]
+
+            sql = "SELECT product_id, count FROM deal_product WHERE deal_id = %s"
+            self.cursor.execute(sql, (element['Идентификатор'],))
+            for result in self.cursor.fetchall():
+                sql = "SELECT name, purchase_price, selling_price FROM product WHERE id = %s"
+                self.cursor.execute(sql, (result[0],))
+                temp_result = self.cursor.fetchall()
+                deals_info[index]['Продукты'].append({temp_result[0][0]: result[1]})
+                if deals_info[index]['Тип_сделки'].__eq__('Продажа'):
+                    total_amount += temp_result[0][2] * result[1]
+                else:
+                    total_amount += temp_result[0][1] * result[1]
+            deals_info[index]['Общая_сумма_сделки'] = total_amount
+
+            deals_info[index]['Продукты_строка'] = ""
+            for item in deals_info[index]['Продукты']:
+                for key, value in item.items():
+                    deals_info[index]['Продукты_строка'] += (key + ' : ' + value.__str__() + ' единиц; ').__str__()
+
+        return deals_info
 
     def create_report(self, data):
         sql = "SELECT name, surname, patronymic FROM partner WHERE company_name=%s"
@@ -207,7 +252,7 @@ class SqlWorker:
         for index, element in enumerate(deals_info):
             sql = "SELECT date FROM deal WHERE id = %s"
             self.cursor.execute(sql, (element['Сделка'],))
-            deals_info[index]['Сделка'] = self.cursor.fetchall()[0][0].__str__()
+            deals_info[index]['Сделка'] = self.cursor.fetchall()[0][0].date().__str__()
 
             sql = "SELECT selling_price FROM product WHERE id = %s"
             self.cursor.execute(sql, (element['Продукт'],))
