@@ -29,6 +29,13 @@ def deal():
     return render_template('index.html', params=params)
 
 
-@app.route('/user', methods=['POST'])
-def add_partner():
-    pass
+@app.route('/report', methods=['POST'])
+def report():
+    json = request.json
+    print(json)
+    params = {"month_profit": worker.get_profit_by_month(),
+              "profit": worker.get_profit_all_time(),
+              "partners": worker.select_partners(),
+              "products": worker.select_products()}
+
+    return render_template('index.html', params=params)

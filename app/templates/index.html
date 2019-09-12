@@ -27,6 +27,7 @@
             deal_info = {}
         }
 
+
         function GetDealParams() {
             partner = document.getElementById("partner_select");
             partner = partner.options[partner.selectedIndex].value;
@@ -101,17 +102,17 @@
     </script>
 
     <script>
-        let data_start = new Date();
-        let data_end = new Date();
+        let date_start = new Date();
+        let date_end = new Date();
         let partner_company = '';
-        let report_info = {"Дата начала отсчета": "", "Дата конца отсчета": "", "Партнер": ""}
+        let report_info = {};
 
 
         function InitializeParamsReport() {
-            let data_start = new Date()
-            let data_end = new Date()
-            let partner_company = ''
-            let report_info = {"Дата начала отсчета": "", "Дата конца отсчета": "", "Партнер": ""}
+            date_start = new Date();
+            date_end = new Date();
+            partner_company = '';
+            report_info = {};
         }
 
 
@@ -119,6 +120,46 @@
             selectElement("datepicker_start", "");
             selectElement("datepicker_end", "");
             selectElement("partner_select_report", "Выберите контрагента");
+        }
+
+
+        function GetReportParams() {
+
+            date_start = new Date($('#datepicker_start').val());
+            var day = date_start.getDate();
+            var month = date_start.getMonth() + 1;
+            var year = date_start.getFullYear();
+            date_start = year + '-' + month + '-' + day;
+
+            date_end = new Date($('#datepicker_end').val());
+            day = date_end.getDate();
+            month = date_end.getMonth() + 1;
+            year = date_end.getFullYear();
+            date_end = year + '-' + month + '-' + day;
+
+            partner_company = document.getElementById("partner_select_report");
+            partner_company = partner_company.options[partner_company.selectedIndex].value;
+            report_info['Дата начала'] = date_start;
+            report_info['Дата конца'] = date_end;
+            report_info['Компания'] = partner_company;
+        }
+
+        function ReportRequest() {
+            GetReportParams();
+            if (new Date(date_start) - new Date(date_end) > 0) {
+                alert("Даты введены неверно");
+                return;
+            }
+
+
+            let xhr = new XMLHttpRequest();
+            let url = "http://localhost:8081/report";
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            let data = JSON.stringify(report_info);
+            xhr.send(data);
+
+            ClearReportModal()
         }
     </script>
 
@@ -416,7 +457,7 @@
                         Отмена
                     </button>
                     <button type="button" class="btn btn-primary" data-dismiss="modal"
-                            onclick="DealRequest()">
+                            onclick="ReportRequest()">
                         Сгенерировать
                     </button>
                 </div>
