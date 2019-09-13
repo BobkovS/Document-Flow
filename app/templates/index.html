@@ -29,25 +29,35 @@
 
         function GetDealParams() {
             partner = document.getElementById("partner_select");
-            partner = partner.options[partner.selectedIndex].value;
+            partner = partner.options[partner.selectedIndex].text;
             deal_type = $(document.getElementById("deal_type_select")).val();
-            deal_info['Партнер'] = partner;
-            deal_info['Список продуктов'] = product_list;
-            deal_info['Тип сделки'] = deal_type;
+            deal_info['company_name'] = partner;
+            deal_info['product'] = product_list;
+            deal_info['deal_type'] = deal_type;
         }
 
         function AddProduct() {
             let products_in_table = [];
             let product = document.getElementById("product_select");
-            product = product.options[product.selectedIndex].value;
+            product = product.options[product.selectedIndex].text;
             let count = $(document.getElementById("product_count")).val();
+            if (product === "Выберите продукт") {
+                alert("Выберите продукт");
+                return;
+            }
+
+            if (count === "") {
+                alert("Введите количество");
+                return;
+            }
+
             for (let i = 0; i < product_list.length; i++) {
-                products_in_table.push(product_list[i].product)
+                products_in_table.push(product_list[i].name)
             }
             if (products_in_table.indexOf(product) >= 0) {
                 product_list[products_in_table.indexOf(product)].count = count
             } else {
-                product_list.push({"product": product, "count": count});
+                product_list.push({"name": product, "count": count});
             }
 
             $("#rows").empty();
@@ -56,7 +66,7 @@
                 let row = document.createElement("tr");
                 let product_cell = document.createElement("td");
                 let count_cell = document.createElement("td");
-                product_cell.innerHTML = product_list[i].product;
+                product_cell.innerHTML = product_list[i].name;
                 count_cell.innerHTML = product_list[i].count;
                 row.append(product_cell);
                 row.append(count_cell);
@@ -71,17 +81,17 @@
 
         function DealRequest() {
             GetDealParams();
-            if (deal_info['Тип сделки'] === "Выберите тип сделки") {
+            if (deal_info['deal_type'] === "Выберите тип сделки") {
                 alert("Выберите тип сделки");
                 return;
             }
 
-            if (deal_info['Партнер'] === "Выберите контрагента") {
+            if (deal_info['company_name'] === "Выберите контрагента") {
                 alert("Выберите контрагента");
                 return;
             }
 
-            if (deal_info['Список продуктов'].length === 0) {
+            if (deal_info['product'].length === 0) {
                 alert("Добавьте продукты к сделке");
                 return;
             }
@@ -92,7 +102,7 @@
             xhr.setRequestHeader("Content-Type", "application/json");
             let data = JSON.stringify(deal_info);
             xhr.send(data);
-            ClearModal()
+            ClearModal();
         }
 
         function ClearModal() {
@@ -138,31 +148,31 @@
             date_end = year + '-' + month + '-' + day;
 
             partner_company = document.getElementById("partner_select_report");
-            partner_company = partner_company.options[partner_company.selectedIndex].value;
-            report_info['Дата начала'] = date_start;
-            report_info['Дата конца'] = date_end;
-            report_info['Компания'] = partner_company;
+            partner_company = partner_company.options[partner_company.selectedIndex].text;
+            report_info['date_from'] = date_start;
+            report_info['date_to'] = date_end;
+            report_info['company_name'] = partner_company;
         }
 
         function ReportRequest() {
             GetReportParams();
 
-            if (report_info['Дата начала'] === "NaN-NaN-NaN") {
+            if (report_info['date_from'] === "NaN-NaN-NaN") {
                 alert("Введите дату начала отсчета");
                 return;
             }
 
-            if (report_info['Дата конца'] === "NaN-NaN-NaN") {
+            if (report_info['date_to'] === "NaN-NaN-NaN") {
                 alert("Введите дату конца отсчета");
                 return;
             }
 
-            if (new Date(report_info['Дата начала']) - new Date(report_info['Дата конца']) > 0) {
+            if (new Date(report_info['date_from']) - new Date(report_info['date_to']) > 0) {
                 alert("Даты введены неверно");
                 return;
             }
 
-            if (report_info['Компания'] === "Выберите контрагента") {
+            if (report_info['company_name'] === "Выберите контрагента") {
                 alert("Выберите контрагента");
                 return;
             }
@@ -176,6 +186,195 @@
 
             ClearReportModal()
         }
+
+
+    </script>
+
+    <script>
+        let partner_name;
+        let partner_surname;
+        let partner_patronymic;
+        let partner_company_1;
+        let partner_info = {};
+
+        function InitializeParamsAddPartner() {
+            partner_name = '';
+            partner_surname = '';
+            partner_patronymic = '';
+            partner_company_1 = '';
+            partner_info = {}
+        }
+
+        function GetAddPartnerParams() {
+            partner_name = $(document.getElementById("partner_name")).val();
+            partner_surname = $(document.getElementById("partner_surname")).val();
+            partner_patronymic = $(document.getElementById("partner_patronymic")).val();
+            partner_company_1 = $(document.getElementById("partner_company")).val();
+            partner_info['name'] = partner_name;
+            partner_info['surname'] = partner_surname;
+            partner_info['patronymic'] = partner_patronymic;
+            partner_info['company_name'] = partner_company_1;
+        }
+
+
+        function AddPartnerRequest() {
+            GetAddPartnerParams();
+            if (partner_info['name'] === "") {
+                alert("Введите имя");
+                return;
+            }
+
+            if (partner_info['company_name'] === "") {
+                alert("Введите название компании");
+                return;
+            }
+
+            let xhr = new XMLHttpRequest();
+            let url = "http://localhost:8081/add_partner";
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            let data = JSON.stringify(partner_info);
+            xhr.send(data);
+            ClearAddPartnerModal();
+        }
+
+        function ClearAddPartnerModal() {
+            selectElement("partner_name", "");
+            selectElement("partner_surname", "");
+            selectElement("partner_patronymic", "");
+            selectElement("partner_company", "");
+        }
+    </script>
+
+    <script>
+        let product_name;
+        let product_purchase_price;
+        let product_selling_price;
+        let product_stock;
+        let product_info = {};
+
+        function InitializeParamsAddProduct() {
+            product_name = '';
+            product_purchase_price = '';
+            product_selling_price = '';
+            product_stock = '';
+            product_info = {}
+        }
+
+        function GetAddProductParams() {
+            product_name = $(document.getElementById("product_name")).val();
+            product_purchase_price = $(document.getElementById("product_purchase_price")).val();
+            product_selling_price = $(document.getElementById("product_selling_price")).val();
+            product_stock = document.getElementById("product_stock_select");
+            product_stock = product_stock.options[product_stock.selectedIndex].text;
+            product_info['name'] = product_name;
+            product_info['purchase_price'] = product_purchase_price;
+            product_info['selling_price'] = product_selling_price;
+            product_info['stock'] = product_stock;
+        }
+
+
+        function AddProductRequest() {
+            GetAddProductParams();
+            if (product_info['name'] === "") {
+                alert("Введите название продукта");
+                return;
+            }
+
+            if (partner_info['purchase_price'] === "") {
+                alert("Введите цену покупки");
+                return;
+            }
+            if (partner_info['selling_price'] === "") {
+                alert("Введите цену продажи");
+                return;
+            }
+            if (partner_info['stock'] === "Выберите склад") {
+                alert("Выберите склад");
+                return;
+            }
+
+            let xhr = new XMLHttpRequest();
+            let url = "http://localhost:8081/add_product";
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            let data = JSON.stringify(product_info);
+            xhr.send(data);
+            ClearAddProductModal();
+        }
+
+        function ClearAddProductModal() {
+            selectElement("product_name", "");
+            selectElement("product_purchase_price", "");
+            selectElement("product_selling_price", "");
+            selectElement("product_stock_select", "Выберите склад");
+        }
+    </script>
+
+
+    <script>
+        var orig_partners_list = '{{params.partners | tojson }}';
+        orig_partners_list = JSON.parse(orig_partners_list);
+
+        var orig_products_list = '{{params.products | tojson }}';
+        orig_products_list = JSON.parse(orig_products_list);
+
+        var orig_deals_list = '{{params.deals | tojson }}';
+        orig_deals_list = JSON.parse(orig_deals_list);
+
+        function FillPartnerTable() {
+            $("#partners_tbody").empty();
+            for (let i = 0; i < orig_partners_list.length; i++) {
+                let row = document.createElement("tr");
+                let name = document.createElement("td");
+                let surname = document.createElement("td");
+                let patronymic = document.createElement("td");
+                let company = document.createElement("td");
+                name.innerHTML = orig_partners_list[i]['name'];
+                surname.innerHTML = orig_partners_list[i]['surname'];
+                patronymic.innerHTML = orig_partners_list[i]['patronymic'];
+                company.innerHTML = orig_partners_list[i]['company'];
+                row.append(name, surname, patronymic, company);
+                document.getElementById("partners_tbody").appendChild(row);
+            }
+        }
+
+        function FillProductTable() {
+            $("#products_tbody").empty();
+            for (let i = 0; i < orig_products_list.length; i++) {
+                let row = document.createElement("tr");
+                let name = document.createElement("td");
+                let purchase_price = document.createElement("td");
+                let selling_price = document.createElement("td");
+                let stock = document.createElement("td");
+                name.innerHTML = orig_products_list[i]['name'];
+                purchase_price.innerHTML = orig_products_list[i]['purchase_price'];
+                selling_price.innerHTML = orig_products_list[i]['selling_price'];
+                stock.innerHTML = orig_products_list[i]['stock'];
+                row.append(name, purchase_price, selling_price, stock);
+                document.getElementById("products_tbody").appendChild(row);
+            }
+        }
+
+
+        function FillDealsTable() {
+            $("#deals_tbody").empty();
+            for (let i = 0; i < orig_deals_list.length; i++) {
+                let row = document.createElement("tr");
+                let date = document.createElement("td");
+                let deal_type = document.createElement("td");
+                let partner = document.createElement("td");
+                let products = document.createElement("td");
+                let amount = document.createElement("td");
+                date.innerHTML = orig_deals_list[i]['Дата'];
+                deal_type.innerHTML = orig_deals_list[i]['Тип_сделки'];
+                partner.innerHTML = orig_deals_list[i]['Партнер'];
+                products.innerHTML = orig_deals_list[i]['Продукты_строка'];
+                amount.innerHTML = orig_deals_list[i]['Общая_сумма_сделки'];
+                row.append(date, deal_type, partner, products, amount);
+                document.getElementById("deals_tbody").appendChild(row);
+            }
+        }
     </script>
 
 </head>
@@ -184,7 +383,7 @@
     <div class="d-flex flex-column" id="content-wrapper">
         <div id="content">
             <div class="container-fluid">
-                <h1 class="text-center text-dark">&nbsp; &nbsp;Продуктовый склад</h1>
+                <h1 class="text-center text-dark">&nbsp; &nbsp; Документооборот</h1>
                 <nav class="navbar navbar-light navbar-expand-md" style="padding: 0;">
                     <div class="container-fluid">
                         <button data-toggle="collapse" class="navbar-toggler" data-target="#navcol-2"><span
@@ -248,7 +447,9 @@
                             <div class="card-body">
                                 <h4 class="card-title">Контрагенты</h4>
                                 <div class="btn-group" role="group"></div>
-                                <button class="btn btn-primary" type="button">+</button>
+                                <button class="btn btn-primary" type="button" data-toggle="modal"
+                                        data-target="#AddPartnerModal" onclick="InitializeParamsAddPartner()">+
+                                </button>
                                 <div class="table-responsive table-bordered">
                                     <table class="table table-bordered">
                                         <thead>
@@ -259,15 +460,7 @@
                                             <th>Компания</th>
                                         </tr>
                                         </thead>
-                                        <tbody>
-                                        {% for partner in params.partners %}
-                                        <tr>
-                                            <td>{{ partner.name }}</td>
-                                            <td>{{ partner.surname }}</td>
-                                            <td>{{ partner.patronymic }}</td>
-                                            <td>{{ partner.company }}</td>
-                                        </tr>
-                                        {% endfor %}
+                                        <tbody id="partners_tbody">
                                         </tbody>
                                     </table>
                                 </div>
@@ -275,7 +468,9 @@
                             <div class="card-body">
                                 <h4 class="card-title">Продукты</h4>
                                 <div class="btn-group" role="group"></div>
-                                <button class="btn btn-primary" type="button">+</button>
+                                <button class="btn btn-primary" type="button" data-toggle="modal"
+                                        data-target="#AddProductModal" onclick="InitializeParamsAddProduct()">+
+                                </button>
                                 <div class="table-responsive table-bordered">
                                     <table class="table table-bordered">
                                         <thead>
@@ -286,15 +481,7 @@
                                             <th>Склад</th>
                                         </tr>
                                         </thead>
-                                        <tbody>
-                                        {% for product in params.products %}
-                                        <tr>
-                                            <td>{{ product.name }}</td>
-                                            <td>{{ product.purchase_price }}</td>
-                                            <td>{{ product.selling_price }}</td>
-                                            <td>{{ product.stock }}</td>
-                                        </tr>
-                                        {% endfor %}
+                                        <tbody id="products_tbody">
                                         </tbody>
                                     </table>
                                 </div>
@@ -312,16 +499,7 @@
                                             <th>Сумма сделки</th>
                                         </tr>
                                         </thead>
-                                        <tbody>
-                                        {% for deal in params.deals %}
-                                        <tr>
-                                            <td>{{ deal.Дата }}</td>
-                                            <td>{{ deal.Тип_сделки }}</td>
-                                            <td>{{ deal.Партнер }}</td>
-                                            <td>{{ deal.Продукты_строка }}</td>
-                                            <td>{{ deal.Общая_сумма_сделки }}</td>
-                                        </tr>
-                                        {% endfor %}
+                                        <tbody id="deals_tbody">
                                         </tbody>
                                     </table>
                                 </div>
@@ -472,12 +650,109 @@
         </div>
     </div>
 
+    <!--    Модальное окно "Добавление нового контрагента"-->
+    <div class="modal fade" id="AddPartnerModal" tabindex="-1" role="dialog"
+         aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div style="width: 400px" class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Добавление нового контрагента</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input style="width: 100%; margin-bottom: 10px" id="partner_name"
+                           type="text"
+                           class="border rounded"
+                           placeholder="Введите имя"/>
+                    <input style="width: 100%; margin-bottom: 10px" id="partner_surname"
+                           type="text"
+                           class="border rounded"
+                           placeholder="Введите фамилию"/>
+                    <input style="width: 100%; margin-bottom: 10px" id="partner_patronymic"
+                           type="text"
+                           class="border rounded"
+                           placeholder="Введите отчество"/>
+                    <input style="width: 100%" id="partner_company"
+                           type="text"
+                           class="border rounded"
+                           placeholder="Введите компанию"/>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            onclick="ClearAddPartnerModal()">
+                        Отмена
+                    </button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal"
+                            onclick="AddPartnerRequest()">
+                        Добавить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!--    Модальное окно "Добавление нового контрагента"-->
+    <div class="modal fade" id="AddProductModal" tabindex="-1" role="dialog"
+         aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div style="width: 400px" class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Добавление нового продукта</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input style="width: 100%; margin-bottom: 10px" id="product_name"
+                           type="text"
+                           class="border rounded"
+                           placeholder="Введите название"/>
+                    <input style="width: 100%; margin-bottom: 10px" id="product_purchase_price"
+                           type="text"
+                           class="border rounded"
+                           placeholder="Введите цену покупки"/>
+                    <input style="width: 100%; margin-bottom: 10px" id="product_selling_price"
+                           type="text"
+                           class="border rounded"
+                           placeholder="Введите цену продажи"/>
+                    <select id="product_stock_select"
+                            class="browser-default custom-select">
+                        <option selected>Выберите склад</option>
+                        {% for stock in params.stocks %}
+                        <option value={{stock}}>{{stock }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            onclick="ClearAddProductModal()">
+                        Отмена
+                    </button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal"
+                            onclick="AddProductRequest()">
+                        Добавить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <a class="border rounded d-inline scroll-to-top" href="#page-top"><i
             class="fas fa-angle-up"></i></a></div>
+
 <script src="../static/js/jquery.min.js"></script>
 <script src="../static/bootstrap/js/bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.js"></script>
 <script src="../static/js/theme.js"></script>
-
+<script>
+    FillPartnerTable();
+    FillProductTable();
+    FillDealsTable();
+</script>
 </body>
 </html>

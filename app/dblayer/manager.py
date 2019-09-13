@@ -116,9 +116,17 @@ class SqlWorker:
         profit = selling_value_by_month - purchase_value_by_month
         return profit
 
+    def get_stocks(self):
+        stocks = []
+        sql = "SELECT value FROM stock"
+        self.cursor.execute(sql)
+        for element in self.cursor.fetchall():
+            stocks.append(element[0])
+        return stocks
+
     # Контрагенты таблица
     def create_partner(self, data):
-        sql = "INSERT INTO partner (name, surname, patronymic, company_name) VALUES (%s,%s,%s,%s,%s)"
+        sql = "INSERT INTO partner (name, surname, patronymic, company_name) VALUES (%s,%s,%s,%s)"
         self.cursor.execute(sql, (data['name'], data['surname'], data['patronymic'], data['company_name']))
         self.connection.commit()
 
@@ -139,13 +147,14 @@ class SqlWorker:
         self.cursor.execute(sql)
         result = self.cursor.fetchall()
         for elem in result:
-            partners.append({'surname': elem[1], "name": elem[2], "patronymic": elem[3], "company": elem[4]})
+            partners.append({'name': elem[1], "surname": elem[2], "patronymic": elem[3], "company": elem[4]})
         return partners
 
     # Продукты таблица
     def create_product(self, data):
-        sql = "INSERT INTO product (name, purchase_price, selling_price) VALUES (%s,%s,%s)"
-        self.cursor.execute(sql, (data['name'], data['purchase_price'], 'selling_price'))
+        sql = "INSERT INTO product (name, purchase_price, selling_price, stock) VALUES" \
+              " (%s,%s,%s, (SELECT id FROM stock WHERE value = %s))"
+        self.cursor.execute(sql, (data['name'], data['purchase_price'], data['selling_price'], data['stock']))
         self.connection.commit()
 
     def update_product(self, data):
