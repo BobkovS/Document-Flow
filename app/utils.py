@@ -1,29 +1,11 @@
+import os
+import zipfile
+
+from Crypto.Hash import SHA256
+from Crypto.PublicKey import RSA
+from Crypto.Signature import pkcs1_15
 from docx import Document
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
-
-
-# fname ="Путь к файлу"
-#
-# # Генерируете новый ключ (или берете ранее сгенерированный)
-# key = RSA.generate(1024, os.urandom)
-# # Получаете хэш файла
-# h = SHA256.new()
-# with open(fname, "rb") as f:
-#     for chunk in iter(lambda: f.read(4096), b""):
-#         h.update(chunk)
-#
-# # Подписываете хэш
-# signature = pkcs1_15.new(key).sign(h)
-#
-# # Получаете открытый ключ из закрытого
-# pubkey = key.publickey()
-#
-# # Пересылаете пользователю файл, публичный ключ и подпись
-# # На стороне пользователя заново вычисляете хэш файла (опущено) и сверяете подпись
-# pkcs1_15.new(pubkey).verify(h, signature)
-#
-# # Отличающийся хэш не должен проходить проверку
-# pkcs1_15.new(pubkey).verify(SHA256.new(b'test'), signature) # raise ValueError("Invalid signature")
 
 
 def generate_report(data):
@@ -78,4 +60,45 @@ def generate_report(data):
     p.add_run(data['Общая сумма закупок'].__str__() + ' рублей').bold = True
 
     document.add_page_break()
-    document.save('demo.docx')
+    document.save('Отчет.docx')
+
+    create_signature()
+    archive_files()
+
+
+def create_signature():
+    # Генерируете новый ключ (или берете ранее сгенерированный)
+    key = RSA.generate(1024, os.urandom)
+    # Получаете хэш файла
+    file_hash = SHA256.new()
+    with open("Отчет.docx", "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            file_hash.update(chunk)
+
+    # Подписываете хэш
+    signature = pkcs1_15.new(key).sign(file_hash)
+
+    # Получаете открытый ключ из закрытого
+    pubkey = key.publickey()
+
+    pkcs1_15.new(pubkey).verify(file_hash, signature)
+
+    with open('Подпись.txt', 'wb') as f:
+        f.write(signature)
+        f.close()
+
+    with open('Ключ.pem', 'wb') as f:
+        f.write(pubkey.export_key())
+        f.close()
+
+
+def archive_files():
+    zip_file = zipfile.ZipFile('report.zip', 'w')
+    files = ['Отчет.docx', 'Подпись.txt', 'Ключ.pem']
+
+    for file in files:
+        zip_file.write(file, compress_type=zipfile.ZIP_DEFLATED)
+    zip_file.close()
+
+    for file in files:
+        os.remove(file)

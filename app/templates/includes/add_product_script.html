@@ -1,0 +1,56 @@
+<script>
+    let product_name;
+    let product_purchase_price;
+    let product_selling_price;
+    let product_stock;
+    let product_info = {};
+
+    function get_add_product_data() {
+        product_name = $(document.getElementById("product_name")).val();
+        product_purchase_price = $(document.getElementById("product_purchase_price")).val();
+        product_selling_price = $(document.getElementById("product_selling_price")).val();
+        product_stock = document.getElementById("product_stock_select");
+        product_stock = product_stock.options[product_stock.selectedIndex].text;
+        product_info['name'] = product_name;
+        product_info['purchase_price'] = product_purchase_price;
+        product_info['selling_price'] = product_selling_price;
+        product_info['stock'] = product_stock;
+    }
+
+    function clear_add_product_modal() {
+        selectElement("product_name", "");
+        selectElement("product_purchase_price", "");
+        selectElement("product_selling_price", "");
+        selectElement("product_stock_select", "Выберите склад");
+    }
+
+    function check_add_product_form() {
+        get_add_product_data();
+        if (product_info['name'] === "") {
+            alert("Введите название продукта");
+            return false;
+        }
+        if (product_info['purchase_price'] === "") {
+            alert("Введите цену покупки");
+            return false;
+        }
+        if (product_info['selling_price'] === "") {
+            alert("Введите цену продажи");
+            return false;
+        }
+        if (product_info['stock'] === "Выберите склад") {
+            alert("Выберите склад");
+            return false;
+        }
+        return true;
+    }
+
+    function submit_add_product_form() {
+        if (check_add_product_form() === true) {
+            document.getElementById('add_product_data').value = JSON.stringify(product_info);
+            $("#add_product_form").submit();
+            clear_add_product_modal();
+            $("#add_product_form").modal('hide');
+        }
+    }
+</script>

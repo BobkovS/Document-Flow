@@ -1,0 +1,54 @@
+<script>
+    let partner_name;
+    let partner_surname;
+    let partner_patronymic;
+    let partner_company_1;
+    let partner_info = {};
+
+    function get_add_partner_data() {
+        partner_name = $(document.getElementById("partner_name")).val();
+        partner_surname = $(document.getElementById("partner_surname")).val();
+        partner_patronymic = $(document.getElementById("partner_patronymic")).val();
+        partner_company_1 = $(document.getElementById("partner_company")).val();
+        partner_info['name'] = partner_name;
+        partner_info['surname'] = partner_surname;
+        partner_info['patronymic'] = partner_patronymic;
+        partner_info['company_name'] = partner_company_1;
+    }
+
+    function clear_add_partner_modal() {
+        selectElement("partner_name", "");
+        selectElement("partner_surname", "");
+        selectElement("partner_patronymic", "");
+        selectElement("partner_company", "");
+    }
+
+    function check_add_partner_form() {
+        get_add_partner_data();
+        if (partner_info['name'] === "") {
+            alert("Введите имя");
+            return false;
+        }
+        if (partner_info['surname'] === "") {
+            alert("Введите фамилию");
+            return false;
+        }
+        if (partner_info['patronymic'] === "") {
+            alert("Введите отчество");
+            return false;
+        }
+        if (partner_info['company_name'] === "") {
+            alert("Введите название компании");
+            return false;
+        }
+        return true;
+    }
+
+    function submit_add_partner_form() {
+        if (check_add_partner_form() === true) {
+            $("#add_partner_form").submit();
+            clear_add_partner_modal();
+            $("#add_partner_modal").modal('hide');
+        }
+    }
+</script>

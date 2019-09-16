@@ -130,17 +130,6 @@ class SqlWorker:
         self.cursor.execute(sql, (data['name'], data['surname'], data['patronymic'], data['company_name']))
         self.connection.commit()
 
-    def update_partner(self, data):
-        sql = "UPDATE partner SET name=%s, surname=%s, patronymic=%s, company_name=%s WHERE company_name=%s"
-        self.cursor.execute(sql, (
-            data['name'], data['surname'], data['patronymic'], data['company_name'], data['old_company_name']))
-        self.connection.commit()
-
-    def delete_partner(self, data):
-        sql = "DELETE FROM partner WHERE company_name=%s"
-        self.cursor.execute(sql, (data['company_name']))
-        self.connection.commit()
-
     def select_partners(self):
         partners = []
         sql = "SELECT * FROM partner"
@@ -155,17 +144,6 @@ class SqlWorker:
         sql = "INSERT INTO product (name, purchase_price, selling_price, stock) VALUES" \
               " (%s,%s,%s, (SELECT id FROM stock WHERE value = %s))"
         self.cursor.execute(sql, (data['name'], data['purchase_price'], data['selling_price'], data['stock']))
-        self.connection.commit()
-
-    def update_product(self, data):
-        sql = "UPDATE product SET name=%s, purchase_price=%s, selling_price=%s WHERE name=%s"
-        self.cursor.execute(sql, (
-            data['name'], data['purchase_price'], data['selling_price'], data['old_name']))
-        self.connection.commit()
-
-    def delete_product(self, data):
-        sql = "DELETE FROM product WHERE name=%s"
-        self.cursor.execute(sql, (data['name']))
         self.connection.commit()
 
     def select_products(self):
@@ -190,7 +168,7 @@ class SqlWorker:
         self.cursor.execute(sql)
         deal_id = self.cursor.fetchall()[0][0]
 
-        for element in data['product']:
+        for element in data['products']:
             sql = "INSERT INTO deal_product (deal_id, product_id, count) VALUES (%s, (SELECT id FROM product WHERE " \
                   "name= %s), %s)"
             self.cursor.execute(sql, (deal_id, element['name'], element['count']))

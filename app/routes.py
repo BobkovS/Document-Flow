@@ -1,8 +1,11 @@
-from flask import render_template, request, Response
 import datetime
+import json
+
+from flask import render_template, request, send_from_directory, redirect, url_for
+
 from app import app
 from app import worker
-from app.utils import generate_report
+from app.utils import *
 
 
 @app.route('/')
@@ -20,29 +23,32 @@ def index():
 
 @app.route('/deal', methods=['POST'])
 def deal():
-    json = request.json
-    json['date'] = datetime.datetime.now()
-    worker.create_deal(json)
-    return Response(status=200)
+    data = request.form
+    data = data.to_dict()
+    data['products'] = json.loads(data['products'])
+    data['date'] = datetime.datetime.now()
+    worker.create_deal(data)
+    return redirect(url_for("index"))
 
 
 @app.route('/report', methods=['POST'])
 def report():
-    json = request.json
-    rep_data = worker.create_report(json)
-    generate_report(rep_data)
-    return Response(status=200)
+    data = request.form
+    report_data = worker.create_report(data)
+    generate_report(report_data)
+    return send_from_directory('/home/bobkovs/PycharmProjects/Documents/', 'report.zip', as_attachment=True)
 
 
 @app.route('/add_partner', methods=['POST'])
 def add_partner():
-    json = request.json
-    worker.create_partner(json)
-    return Response(status=200)
+    data = request.form
+    worker.create_partner(data)
+    return redirect(url_for('index'))
 
 
 @app.route('/add_product', methods=['POST'])
 def add_product():
-    json = request.json
-    worker.create_product(json)
-    return Response(status=200)
+    data = request.form.get('add_product_data')
+    data = json.loads(data)
+    worker.create_product(data)
+    return redirect(url_for('index'))

@@ -1,0 +1,61 @@
+<script>
+    let date_start = new Date();
+    let date_end = new Date();
+    let partner_company = '';
+    let report_info = {};
+
+    function clear_report_modal() {
+        selectElement("datepicker_start", "");
+        selectElement("datepicker_end", "");
+        selectElement("partner_select_report", "Выберите контрагента");
+    }
+
+    function get_report_form_data() {
+        date_start = new Date($('#datepicker_start').val());
+        var day = date_start.getDate();
+        var month = date_start.getMonth() + 1;
+        var year = date_start.getFullYear();
+        date_start = year + '-' + month + '-' + day;
+
+        date_end = new Date($('#datepicker_end').val());
+        day = date_end.getDate();
+        month = date_end.getMonth() + 1;
+        year = date_end.getFullYear();
+        date_end = year + '-' + month + '-' + day;
+
+        partner_company = document.getElementById("partner_select_report");
+        partner_company = partner_company.options[partner_company.selectedIndex].text;
+        report_info['date_from'] = date_start;
+        report_info['date_to'] = date_end;
+        report_info['company_name'] = partner_company;
+    }
+
+    function check_report_form() {
+        get_report_form_data();
+        if (report_info['date_from'] === "NaN-NaN-NaN") {
+            alert("Введите дату начала отсчета");
+            return false;
+        }
+        if (report_info['date_to'] === "NaN-NaN-NaN") {
+            alert("Введите дату конца отсчета");
+            return false;
+        }
+        if (new Date(report_info['date_from']) - new Date(report_info['date_to']) > 0) {
+            alert("Даты введены неверно");
+            return false;
+        }
+        if (report_info['company_name'] === "Выберите контрагента") {
+            alert("Выберите контрагента");
+            return false;
+        }
+        return true;
+    }
+
+    function submit_report_form() {
+        if (check_report_form() === true) {
+            $("#report_form").submit();
+            clear_report_modal();
+            $("#report_modal").modal('hide');
+        }
+    }
+</script>

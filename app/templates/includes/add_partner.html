@@ -1,0 +1,49 @@
+<div class="modal fade" id="add_partner_modal" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div style="width: 400px" class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавление нового контрагента</h5>
+                <button type="button" class="close" data-dismiss="modal" onclick="clear_add_partner_modal()"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="add_partner_form" action="add_partner" method="POST">
+                <div class="modal-body">
+                    <input style="width: 100%; margin-bottom: 10px" id="partner_name"
+                           name="name"
+                           type="text"
+                           class="border rounded"
+                           placeholder="Введите имя"/>
+                    <input style="width: 100%; margin-bottom: 10px" id="partner_surname"
+                           name="surname"
+                           type="text"
+                           class="border rounded"
+                           placeholder="Введите фамилию"/>
+                    <input style="width: 100%; margin-bottom: 10px" id="partner_patronymic"
+                           name="patronymic"
+                           type="text"
+                           class="border rounded"
+                           placeholder="Введите отчество"/>
+                    <input style="width: 100%" id="partner_company"
+                           name="company_name"
+                           type="text"
+                           class="border rounded"
+                           placeholder="Введите компанию"/>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            onclick="clear_add_partner_modal()">
+                        Отмена
+                    </button>
+                    <button type="button" class="btn btn-primary"
+                            onclick="submit_add_partner_form()">
+                        Добавить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,53 @@
+<div class="modal fade" id="add_product_modal" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div style="width: 400px" class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавление нового продукта</h5>
+                <button type="button" class="close" data-dismiss="modal" onclick="clear_add_product_modal()"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="add_product_form" action="add_product" method="POST">
+                <div class="modal-body">
+                    <input type='hidden' id='add_product_data' name='add_product_data' value=''/>
+                    <input style="width: 100%; margin-bottom: 10px" id="product_name"
+                           name="name"
+                           type="text"
+                           class="border rounded"
+                           placeholder="Введите название"/>
+                    <input style="width: 100%; margin-bottom: 10px" id="product_purchase_price"
+                           name="purchase_price"
+                           type="text"
+                           class="border rounded"
+                           placeholder="Введите цену покупки"/>
+                    <input style="width: 100%; margin-bottom: 10px" id="product_selling_price"
+                           name="selling_price"
+                           type="text"
+                           class="border rounded"
+                           placeholder="Введите цену продажи"/>
+                    <select id="product_stock_select"
+                            name="stock"
+                            class="browser-default custom-select">
+                        <option selected>Выберите склад</option>
+                        {% for stock in params.stocks %}
+                        <option value={{stock}}>{{stock }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            onclick="clear_add_product_modal()">
+                        Отмена
+                    </button>
+                    <button type="button" class="btn btn-primary"
+                            onclick="submit_add_product_form()">
+                        Добавить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

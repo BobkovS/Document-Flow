@@ -1,0 +1,45 @@
+<div class="modal fade" id="report_modal" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Генерация отчета</h5>
+                <button type="button" class="close" data-dismiss="modal" onclick="clear_report_modal()"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="report_form" action="report" method="POST">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col">
+                            <label style="font-size: small">Дата начала</label>
+                            <input name="date_from" id="datepicker_start" type="date"/></div>
+                        <div class="col">
+                            <label style="font-size: small">Дата конца</label>
+                            <input name="date_to" id="datepicker_end" type="date"/></div>
+                        <div class="col">
+                            <label style="font-size: small">Компания</label>
+                            <select name="company_name" id="partner_select_report">
+                                <option selected>Выберите контрагента</option>
+                                {% for partner in params.partners %}
+                                <option value={{partner.company}}>{{partner.company }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            onclick="clear_report_modal()">
+                        Отмена
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="submit_report_form()">
+                        Сгенерировать
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
