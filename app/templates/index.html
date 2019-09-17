@@ -17,6 +17,7 @@
     {% include 'includes/report_script.html' %}
     {% include 'includes/add_partner_script.html' %}
     {% include 'includes/add_product_script.html' %}
+    {% include 'includes/sign_check_script.html' %}
 
 
     <script>
@@ -104,11 +105,15 @@
                                                                             style="line-height: 24px;font-size: 22px;">Оформить
                                     сделку</a></li>
                                 <li class="nav-item" role="presentation"><a class="nav-link text-left text-dark"
-                                                                            href="table.html"
                                                                             data-toggle="modal"
                                                                             data-target="#report_modal"
                                                                             style="font-size: 22px;line-height: 24px;">Сгенерировать
                                     отчет</a></li>
+                                <li class="nav-item" role="presentation"><a class="nav-link text-left text-dark"
+                                                                            data-toggle="modal"
+                                                                            data-target="#sign_check_modal"
+                                                                            style="font-size: 22px;line-height: 24px;">Проверить
+                                    подпись</a></li>
                                 <li class="nav-item" role="presentation"></li>
                             </ul>
                         </div>
@@ -235,6 +240,9 @@
 
     <!--    Модальное окно "Добавление нового продукта"-->
     {% include 'includes/add_product.html' %}
+
+    <!--    Модальное окно "Проверка ЭЦП"-->
+    {% include 'includes/sign_check.html' %}
 
     <a class="border rounded d-inline scroll-to-top" href="#page-top"><i
             class="fas fa-angle-up"></i></a></div>

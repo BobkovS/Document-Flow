@@ -1,0 +1,14 @@
+<script>
+
+    function clear_sign_check_modal() {
+        selectElement("sign_document", "");
+        selectElement("signature", "");
+        selectElement("sign_key", "");
+    }
+
+    function submit_sign_check_form() {
+        $("#sign_check_form").submit();
+        clear_sign_check_modal();
+        $("#sign_check_modal").modal('hide');
+    }
+</script>

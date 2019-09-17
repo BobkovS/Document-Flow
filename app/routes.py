@@ -1,8 +1,8 @@
 import datetime
 import json
-
+import os
 from flask import render_template, request, send_from_directory, redirect, url_for
-
+from verify_signature import verify_signature_temp
 from app import app
 from app import worker
 from app.utils import *
@@ -52,3 +52,17 @@ def add_product():
     data = json.loads(data)
     worker.create_product(data)
     return redirect(url_for('index'))
+
+
+@app.route('/check_sign', methods=['POST'])
+def check_sign():
+    request.files['document'].save('Отчет.docx')
+    request.files['signature'].save('Подпись.txt')
+    request.files['public_key'].save('Ключ.pem')
+    result = verify_signature_temp()
+
+    os.remove('Отчет.docx')
+    os.remove('Подпись.txt')
+    os.remove('Ключ.pem')
+
+    return result
