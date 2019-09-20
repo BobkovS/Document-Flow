@@ -1,6 +1,5 @@
 import datetime
 import json
-import os
 from flask import render_template, request, send_from_directory, redirect, url_for
 from verify_signature import verify_signature_temp
 from app import app
